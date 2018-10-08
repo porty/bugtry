@@ -1,0 +1,68 @@
+version: '2'
+services:
+  sentry:
+    image: sentry
+    # environment:
+    #   - SYMFONY_ENV=dev
+    #   - SYMFONY_DEBUG=debug
+    environment:
+      - SENTRY_SECRET_KEY=09n=0&n=k&14_x@mq8)%=lg765&cukiqj1(+mw1s^gqz!pjk=(
+      - SENTRY_REDIS_HOST=redis
+      - SENTRY_POSTGRES_HOST=postgres
+      - SENTRY_DB_USER=sentry
+      - SENTRY_DB_PASSWORD=secret
+    depends_on:
+      - redis
+      - postgres
+    # ports:
+    #   - 49889:80/tcp
+    networks:
+      - sentry
+  
+  redis:
+    image: redis
+    networks:
+      - sentry
+  
+  postgres:
+    image: postgres
+    environment:
+      - POSTGRES_PASSWORD=secret
+      - POSTGRES_USER=sentry
+    networks:
+      - sentry
+
+  sentry-beat:
+    image: sentry
+    command: run cron
+    environment:
+      - SENTRY_SECRET_KEY=09n=0&n=k&14_x@mq8)%=lg765&cukiqj1(+mw1s^gqz!pjk=(
+      - SENTRY_REDIS_HOST=redis
+      - SENTRY_POSTGRES_HOST=postgres
+      - SENTRY_DB_USER=sentry
+      - SENTRY_DB_PASSWORD=secret
+    depends_on:
+      - redis
+      - postgres
+    networks:
+      - sentry
+
+  sentry-worker:
+    image: sentry
+    command: run worker
+    environment:
+      - SENTRY_SECRET_KEY=09n=0&n=k&14_x@mq8)%=lg765&cukiqj1(+mw1s^gqz!pjk=(
+      - SENTRY_REDIS_HOST=redis
+      - SENTRY_POSTGRES_HOST=postgres
+      - SENTRY_DB_USER=sentry
+      - SENTRY_DB_PASSWORD=secret
+    depends_on:
+      - redis
+      - postgres
+    networks:
+      - sentry
+
+networks:
+  sentry:
+    driver: bridge
+
